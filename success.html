@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Balance Page</title>
+  <script>
+    // Get the username from the URL query parameters
+    function getUsernameFromURL() {
+      var urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('username');
+    }
+    
+    // Fetch the user's balance and display it
+    function fetchBalance() {
+      var username = getUsernameFromURL();
+      
+      // Simulating fetching balance using JavaScript
+      fetch('user.txt')
+        .then(response => response.text())
+        .then(data => {
+          var users = data.split('\n');
+          
+          for (var i = 0; i < users.length; i++) {
+            var userDetails = users[i].split(':');
+            if (userDetails[0] === username) {
+              document.getElementById("balance").innerHTML = "Your balance is: $" + userDetails[1];
+              break;
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+    
+    // Send money to a user
+    function sendMoney() {
+      var username = getUsernameFromURL();
+      var recipient = document.getElementById("recipient").value;
+      var amount = document.getElementById("amount").value;
+      
+      // Simulating sending money using JavaScript
+      fetch('user.txt')
+        .then(response => response.text())
+        .then(data => {
+          var users = data.split('\n');
+          var updatedUsers = [];
+          var senderBalanceUpdated = false;
+          
+          for (var i = 0; i < users.length; i++) {
+            var userDetails = users[i].split(':');
+            if (userDetails[0] === username) {
+              var balance = parseInt(userDetails[1]);
+              if (balance >= amount) {
+                balance -= amount;
+                document.getElementById("balance").innerHTML = "Your balance is: $" + balance;
+                senderBalanceUpdated = true;
+              } else {
+                console.log("Insufficient balance");
+              }
+            } else if (userDetails[0] === recipient) {
+              var balance = parseInt(userDetails[1]);
+              balance += parseInt(amount);
+            }
+            
+            updatedUsers.push(userDetails.join(':'));
+          }
+          
+          if (senderBalanceUpdated) {
+            // Update the user.txt file with the updated balances
+            var updatedData = updatedUsers.join('\n');
+            fetch('data:text/plain;charset=utf-8,' + encodeURIComponent(updatedData))
+              .then(response => {
+                console.log("User balances updated successfully");
+              })
+              .catch(error => {
+                console.error('Error:', error);
+              });
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      
+      // Clear the input fields
+      document.getElementById("recipient").value = "";
+      document.getElementById("amount").value = "";
+    }
+    
+    // Add money to the user's balance
+    function addMoney() {
+      var username = getUsernameFromURL();
+      var amount = parseInt(document.getElementById("amount").value);
+      
+      // Simulating adding money using JavaScript
+      fetch('user.txt')
+        .then(response => response.text())
+        .then(data => {
+          var users = data.split('\n');
+          var updatedUsers = [];
+          var balanceUpdated = false;
+          
+          for (var i = 0; i < users.length; i++) {
+            var userDetails = users[i].split(':');
+            if (userDetails[0] === username) {
+              var balance = parseInt(userDetails[1]);
+              balance += amount;
+              document.getElementById("balance").innerHTML = "Your balance is: $" + balance;
+              balanceUpdated = true;
+            }
+            
+            updatedUsers.push(userDetails.join(':'));
+          }
+          
+          if (balanceUpdated) {
+            // Update the user.txt file with the updated balance
+            var updatedData = updatedUsers.join('\n');
+            fetch('data:text/plain;charset=utf-8,' + encodeURIComponent(updatedData))
+              .then(response => {
+                console.log("User balance updated successfully");
+              })
+              .catch(error => {
+                console.error('Error:', error);
+              });
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      
+      // Clear the input field
+      document.getElementById("amount").value = "";
+    }
+  </script>
+</head>
+<body onload="fetchBalance()">
+  <h1>Balance Page</h1>
+  <div id="balance"></div>
+  
+  <h2>Send Money</h2>
+  <div>
+    <label for="recipient">Recipient:</label>
+    <input type="text" id="recipient" placeholder="Recipient's username">
+  </div>
+  <div>
+    <label for="amount">Amount:</label>
+    <input type="text" id="amount" placeholder="Amount to send">
+  </div>
+  <button onclick="sendMoney()">Send</button>
+  
+  <h2>Add Money</h2>
+  <div>
+    <label for="amount">Amount:</label>
+    <input type="text" id="amount" placeholder="Amount to add">
+  </div>
+  <button onclick="addMoney()">Add</button>
+</body>
+</html>
